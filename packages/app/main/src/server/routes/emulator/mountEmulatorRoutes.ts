@@ -90,4 +90,23 @@ export function mountEmulatorRoutes(emulatorServer: EmulatorRestServer) {
   );
 
   server.get('/emulator/ws/port', getWebSocketPort);
+
+  server.post('/emulator/:conversationId/log', jsonBodyParser, (req, res, next) => {
+    try {
+      const activity = req.body;
+      const sender = activity.from.role;
+      let recipient;
+      if (sender === 'bot') {
+        recipient = 'user';
+      } else {
+        recipient = 'bot';
+      }
+      emulatorServer.logger.logActivity(req.params.conversationId, activity, recipient);
+      res.send(200);
+    } catch (e) {
+      res.send(500, e);
+    }
+    res.end();
+    next();
+  });
 }
